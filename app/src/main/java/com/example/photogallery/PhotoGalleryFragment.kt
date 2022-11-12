@@ -12,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photogallery.model.GalleryItem
 
@@ -21,10 +22,7 @@ class PhotoGalleryFragment : Fragment() {
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
     private lateinit var photoRecyclerView: RecyclerView
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private var adapter = PhotoAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,7 +33,7 @@ class PhotoGalleryFragment : Fragment() {
 
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
         photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
-
+        photoRecyclerView.adapter = adapter
         return view
     }
 
@@ -44,19 +42,21 @@ class PhotoGalleryFragment : Fragment() {
         photoGalleryViewModel.galleryItemLiveData.observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
-                Log.d(TAG, "Have gallery items from view model $galleryItems")
-                photoRecyclerView.adapter = PhotoAdapter(galleryItems)
+                adapter.submitList(ArrayList(galleryItems))
             })
     }
 
-    private class PhotoHolder(itemTextView: TextView)
-        : RecyclerView.ViewHolder(itemTextView) {
+    private class PhotoHolder( itemTextView: TextView) : RecyclerView.ViewHolder(itemTextView) {
 
-        val bindTitle: (CharSequence) -> Unit = itemTextView::setText
+        val textView = itemTextView
+
+        fun bindTitle(str: String) {
+            textView.text = str
+        }
     }
 
-    private class PhotoAdapter(private val galleryItems: List<GalleryItem>)
-        : RecyclerView.Adapter<PhotoHolder>() {
+    private class PhotoAdapter() :
+        ListAdapter<GalleryItem, PhotoHolder>(FlickrCallback()) {
 
         override fun onCreateViewHolder(
             parent: ViewGroup,
@@ -66,10 +66,8 @@ class PhotoGalleryFragment : Fragment() {
             return PhotoHolder(textView)
         }
 
-        override fun getItemCount(): Int = galleryItems.size
-
         override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
-            val galleryItem = galleryItems[position]
+            val galleryItem = currentList[position]
             holder.bindTitle(galleryItem.title)
         }
     }
