@@ -1,16 +1,16 @@
 package com.example.photogallery
 
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.*
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -23,22 +23,60 @@ class PhotoGalleryFragment : Fragment() {
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
     private lateinit var photoRecyclerView: RecyclerView
     private var adapter = PhotoAdapter()
+    private lateinit var thumbnailDownloader: ThumbnailDownloader<PhotoHolder>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
+        val responseHandler = Handler()
+        thumbnailDownloader =
+            ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
+                val drawable = BitmapDrawable(resources, bitmap)
+                photoHolder.bindDrawable(drawable)
+            }
+        lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        viewLifecycleOwner.lifecycle.addObserver(
+            thumbnailDownloader.viewLifecycleObserver
+        )
         val view = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
+        createRecyclerView(view)
+        return view
+    }
 
+    private fun createRecyclerView(view: View) {
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
         photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
         photoRecyclerView.adapter = adapter
-        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        createObserver()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        thumbnailDownloader.clearQueue()
+        viewLifecycleOwner.lifecycle.removeObserver(
+            thumbnailDownloader.viewLifecycleObserver
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(
+            thumbnailDownloader.fragmentLifecycleObserver
+        )
+    }
+
+    private fun createObserver() {
         photoGalleryViewModel.galleryItemLiveData.observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
@@ -46,29 +84,25 @@ class PhotoGalleryFragment : Fragment() {
             })
     }
 
-    private class PhotoHolder( itemTextView: TextView) : RecyclerView.ViewHolder(itemTextView) {
-
-        val textView = itemTextView
-
-        fun bindTitle(str: String) {
-            textView.text = str
-        }
+    private class PhotoHolder(private val itemImageView: ImageView) :
+        RecyclerView.ViewHolder(itemImageView) {
+        val bindDrawable: (Drawable) -> Unit = itemImageView::setImageDrawable
     }
 
-    private class PhotoAdapter() :
-        ListAdapter<GalleryItem, PhotoHolder>(FlickrCallback()) {
+    private inner class PhotoAdapter() : ListAdapter<GalleryItem, PhotoHolder>(FlickrCallback()) {
 
         override fun onCreateViewHolder(
             parent: ViewGroup,
             viewType: Int
         ): PhotoHolder {
-            val textView = TextView(parent.context)
-            return PhotoHolder(textView)
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.list_item_gallery, parent, false) as ImageView
+            return PhotoHolder(view)
         }
 
         override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
             val galleryItem = currentList[position]
-            holder.bindTitle(galleryItem.title)
+            thumbnailDownloader.queueThumbnail(holder,galleryItem.url)
         }
     }
 
