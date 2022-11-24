@@ -2,6 +2,7 @@ package com.example.photogallery
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.fragment.app.commit
 import androidx.recyclerview.widget.RecyclerView
 
 class PhotoGalleryActivity : AppCompatActivity() {
@@ -12,10 +13,9 @@ class PhotoGalleryActivity : AppCompatActivity() {
 
         val isFragmentContainerEmpty = (savedInstanceState == null)
         if (isFragmentContainerEmpty){
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fragmentContainer,PhotoGalleryFragment.newInstance())
-                .commit()
+            supportFragmentManager.commit {
+                add(R.id.fragmentContainer,PhotoGalleryFragment.newInstance())
+            }
         }
     }
 }
