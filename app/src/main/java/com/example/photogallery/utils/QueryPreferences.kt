@@ -1,7 +1,6 @@
-package com.example.photogallery
+package com.example.photogallery.utils
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.preference.PreferenceManager
 
 private const val PREF_SEARCH_QUERY = "searchQuery"

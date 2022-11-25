@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photogallery.model.GalleryItem
+import com.example.photogallery.utils.FlickrCallback
+import com.example.photogallery.utils.ThumbnailDownloader
 
 private const val TAG = "PhotoGalleryFragment"
 
@@ -55,6 +57,19 @@ class PhotoGalleryFragment : Fragment() {
                     return false
                 }
             })
+            setOnSearchClickListener {
+                searchView.setQuery(photoGalleryViewModel.searchTerm, false)
+            }
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId){
+            R.id.menu_item_clear -> {
+                photoGalleryViewModel.fetchPhotos("")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

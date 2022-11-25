@@ -1,4 +1,4 @@
-package com.example.photogallery
+package com.example.photogallery.utils
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import com.example.photogallery.FlickrFetchr
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap

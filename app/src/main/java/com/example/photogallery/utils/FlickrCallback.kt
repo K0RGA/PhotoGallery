@@ -1,4 +1,4 @@
-package com.example.photogallery
+package com.example.photogallery.utils
 
 import androidx.recyclerview.widget.DiffUtil
 import com.example.photogallery.model.GalleryItem

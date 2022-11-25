@@ -1,27 +1,32 @@
 package com.example.photogallery
 
-import androidx.constraintlayout.widget.ConstraintSet.Transform
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
+import android.app.Application
+import androidx.lifecycle.*
 import com.example.photogallery.model.GalleryItem
+import com.example.photogallery.utils.QueryPreferences
 
-class PhotoGalleryViewModel: ViewModel() {
+class PhotoGalleryViewModel(private val app: Application) : AndroidViewModel(app) {
     val galleryItemLiveData: LiveData<List<GalleryItem>>
     private val flickrFetchr = FlickrFetchr()
     private val mutableSearchTerm = MutableLiveData<String>()
 
+    val searchTerm: String
+        get() = mutableSearchTerm.value ?: ""
+
     init {
-        mutableSearchTerm.value = "planet"
+        mutableSearchTerm.value = ""
 
         galleryItemLiveData = Transformations.switchMap(mutableSearchTerm) { searchTerm ->
-            liveData { emit(flickrFetchr.searchPhotos(searchTerm))  }
+            if (searchTerm.isBlank()) {
+                liveData { emit(flickrFetchr.fetchPhotos()) }
+            } else {
+                liveData { emit(flickrFetchr.searchPhotos(searchTerm)) }
+            }
         }
     }
 
-    fun fetchPhotos(query: String = ""){
+    fun fetchPhotos(query: String = "") {
+        QueryPreferences.setStoryQuery(app, query)
         mutableSearchTerm.value = query
     }
 }
