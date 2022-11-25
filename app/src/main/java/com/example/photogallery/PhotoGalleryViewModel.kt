@@ -1,14 +1,15 @@
 package com.example.photogallery
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.*
 import com.example.photogallery.api.FlickrFetchr
 import com.example.photogallery.model.GalleryItem
 import com.example.photogallery.utils.QueryPreferences
 
 class PhotoGalleryViewModel(private val app: Application) : AndroidViewModel(app) {
+
     val galleryItemLiveData: LiveData<List<GalleryItem>>
+
     private val flickrFetchr = FlickrFetchr()
     private val mutableSearchTerm = MutableLiveData<String>()
 
@@ -16,7 +17,7 @@ class PhotoGalleryViewModel(private val app: Application) : AndroidViewModel(app
         get() = mutableSearchTerm.value ?: ""
 
     init {
-        mutableSearchTerm.value = ""
+        mutableSearchTerm.value = QueryPreferences.getStoredQuery(app)
 
         galleryItemLiveData = Transformations.switchMap(mutableSearchTerm) { searchTerm ->
             if (searchTerm.isBlank()) {
@@ -28,7 +29,7 @@ class PhotoGalleryViewModel(private val app: Application) : AndroidViewModel(app
     }
 
     fun fetchPhotos(query: String = "") {
-        QueryPreferences.setStoryQuery(app, query)
+        QueryPreferences.setStoredQuery(app, query)
         mutableSearchTerm.value = query
     }
 }

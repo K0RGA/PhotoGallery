@@ -6,15 +6,13 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.photogallery.api.FlickrFetchr
 import com.example.photogallery.model.GalleryItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 
 class PollWorker(val context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
     override fun doWork(): Result {
-        val query = QueryPreferences.getStoryQuery(context)
+        val query = QueryPreferences.getStoredQuery(context)
         val lastResultId = QueryPreferences.getLastResultId(context)
         var items = mutableListOf<GalleryItem>()
         if (query.isEmpty()) {
