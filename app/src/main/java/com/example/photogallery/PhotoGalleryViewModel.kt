@@ -2,6 +2,7 @@ package com.example.photogallery
 
 import android.app.Application
 import androidx.lifecycle.*
+import com.example.photogallery.api.FlickrFetchr
 import com.example.photogallery.model.GalleryItem
 import com.example.photogallery.utils.QueryPreferences
 
