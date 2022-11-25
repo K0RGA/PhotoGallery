@@ -4,6 +4,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
@@ -13,8 +14,10 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.*
 import com.example.photogallery.model.GalleryItem
 import com.example.photogallery.utils.FlickrCallback
+import com.example.photogallery.utils.PollWorker
 import com.example.photogallery.utils.ThumbnailDownloader
 
 private const val TAG = "PhotoGalleryFragment"
@@ -37,6 +40,20 @@ class PhotoGalleryFragment : Fragment() {
             }
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
         setHasOptionsMenu(true)
+
+        createWorkRequest()
+    }
+
+    private fun createWorkRequest() {
+        val constraint = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .build()
+        val workRequest = OneTimeWorkRequest
+            .Builder(PollWorker::class.java)
+            .setConstraints(constraint)
+            .build()
+        WorkManager.getInstance()
+            .enqueue(workRequest)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -57,6 +74,7 @@ class PhotoGalleryFragment : Fragment() {
                     return false
                 }
             })
+
             setOnSearchClickListener {
                 searchView.setQuery(photoGalleryViewModel.searchTerm, false)
             }
@@ -66,7 +84,7 @@ class PhotoGalleryFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId){
             R.id.menu_item_clear -> {
-                photoGalleryViewModel.fetchPhotos("")
+                photoGalleryViewModel.fetchPhotos()
                 true
             }
             else -> super.onOptionsItemSelected(item)

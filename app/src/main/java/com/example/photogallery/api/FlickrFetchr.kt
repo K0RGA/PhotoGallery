@@ -42,8 +42,20 @@ class FlickrFetchr {
         return fetchPhotoMetaData(flickrApi.fetchPhotos())
     }
 
+    fun fetchPhotosRequest():Deferred<List<GalleryItem>> {
+        return CoroutineScope(Dispatchers.IO).async{
+            fetchPhotoMetaData(flickrApi.fetchPhotos())
+        }
+    }
+
     suspend fun searchPhotos(str: String): List<GalleryItem>{
         return fetchPhotoMetaData(flickrApi.searchPhotos(str))
+    }
+
+    fun searchPhotosRequest(str: String): Deferred<List<GalleryItem>>{
+        return CoroutineScope(Dispatchers.IO).async {
+            fetchPhotoMetaData(flickrApi.searchPhotos(str))
+        }
     }
 
     fun fetchPhotoMetaData(flickrRequest: Response<FlickrResponse>): List<GalleryItem> {
