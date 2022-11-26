@@ -4,4 +4,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="search">Поиск</string>
     <string name="clear_search">Пустой поиск</string>
+    <string name="notification_channel_name">FlickrFetcher</string>
+    <string name="new_pictures_title">New PhotoGallery Pictures</string>
+    <string name="new_pictures_text">You have new pictures in PhotoGallery.</string>
 </resources>
