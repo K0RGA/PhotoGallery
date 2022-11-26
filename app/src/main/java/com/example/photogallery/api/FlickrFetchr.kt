@@ -2,18 +2,13 @@ package com.example.photogallery.api
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
-import androidx.lifecycle.LiveData
-import com.example.photogallery.api.FlickrApi
-import com.example.photogallery.api.FlickrResponse
-import com.example.photogallery.api.PhotoInterceptor
-import com.example.photogallery.api.PhotoResponse
 import com.example.photogallery.model.GalleryItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import okhttp3.OkHttpClient
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -42,20 +37,16 @@ class FlickrFetchr {
         return fetchPhotoMetaData(flickrApi.fetchPhotos())
     }
 
-    fun fetchPhotosRequest():Deferred<List<GalleryItem>> {
-        return CoroutineScope(Dispatchers.IO).async{
-            fetchPhotoMetaData(flickrApi.fetchPhotos())
-        }
+    fun fetchPhotosRequest(): Call<FlickrResponse> {
+        return flickrApi.fetchPhotosCall()
     }
 
     suspend fun searchPhotos(str: String): List<GalleryItem>{
         return fetchPhotoMetaData(flickrApi.searchPhotos(str))
     }
 
-    fun searchPhotosRequest(str: String): Deferred<List<GalleryItem>>{
-        return CoroutineScope(Dispatchers.IO).async {
-            fetchPhotoMetaData(flickrApi.searchPhotos(str))
-        }
+    fun searchPhotosRequest(query: String): Call<FlickrResponse> {
+        return flickrApi.searchPhotosCall(query)
     }
 
     fun fetchPhotoMetaData(flickrRequest: Response<FlickrResponse>): List<GalleryItem> {

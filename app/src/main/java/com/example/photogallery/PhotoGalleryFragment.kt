@@ -65,8 +65,8 @@ class PhotoGalleryFragment : Fragment() {
 
         searchView.apply {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener{
-                override fun onQueryTextSubmit(queryString: String?): Boolean {
-                    photoGalleryViewModel.fetchPhotos(queryString?: "")
+                override fun onQueryTextSubmit(queryString: String): Boolean {
+                    photoGalleryViewModel.fetchPhotos(queryString)
                     return true
                 }
 
