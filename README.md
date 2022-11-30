@@ -13,4 +13,5 @@
 * Весь код был написан  на **Kotlin**
 * **MVVM**-архитектура
 * **Kotlin coroutines** для Retrofit
+* **Picasso** для загрузки изображений
 * **Retrofit** для построение REST API
