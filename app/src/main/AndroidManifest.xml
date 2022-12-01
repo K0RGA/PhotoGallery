@@ -21,6 +21,8 @@
         android:theme="@style/Theme.PhotoGallery"
         tools:targetApi="31">
 
+        <activity android:name=".PhotoPageActivity"/>
+
         <activity
             android:name=".PhotoGalleryActivity"
             android:exported="true">
