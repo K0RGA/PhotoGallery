@@ -2,7 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <permission
+        android:name="com.example.photogallery.PRIVATE"
+        android:protectionLevel="signature"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.example.photogallery.PRIVATE"/>
 
     <application
         android:name=".utils.PhotoGalleryApplication"
@@ -15,12 +20,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoGallery"
         tools:targetApi="31">
+
         <activity
             android:name=".PhotoGalleryActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
@@ -28,6 +33,17 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
+        <receiver
+            android:name=".utils.NotificationReceiver"
+            android:exported="false"
+            android:permission="com.example.photogallery.PRIVATE">
+            <intent-filter
+                android:priority="-999">
+                <action android:name="com.example.photogallery.SHOW_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

@@ -19,10 +19,11 @@ import com.example.photogallery.model.GalleryItem
 import com.example.photogallery.utils.FlickrCallback
 import com.example.photogallery.utils.PollWorker
 import com.example.photogallery.utils.ThumbnailDownloader
+import com.example.photogallery.utils.VisibleFragment
 
 private const val TAG = "PhotoGalleryFragment"
 
-class PhotoGalleryFragment : Fragment() {
+class PhotoGalleryFragment : VisibleFragment() {
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
     private lateinit var photoRecyclerView: RecyclerView

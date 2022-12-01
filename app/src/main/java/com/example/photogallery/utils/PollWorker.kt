@@ -1,7 +1,9 @@
 package com.example.photogallery.utils
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -43,25 +45,38 @@ class PollWorker(val context: Context, workerParams: WorkerParameters) :
         } else {
             Log.d("Pollworker", "Got a new result: $resultId")
             QueryPreferences.setLastResultId(context, resultId)
+
+            val intent = PhotoGalleryApplication.newIntent(context)
+            val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+            val resources = context.resources
+            val notification = NotificationCompat
+                .Builder(context, NOTIFICATION_CHANNEL_ID)
+                .setTicker(resources.getString(R.string.new_pictures_title))
+                .setSmallIcon(android.R.drawable.ic_menu_report_image)
+                .setContentTitle(resources.getString(R.string.new_pictures_title))
+                .setContentText(resources.getString(R.string.new_pictures_text))
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build()
+
+            showBackgroundNotification(0, notification)
         }
-
-        val intent = PhotoGalleryApplication.newIntent(context)
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-
-        val resources = context.resources
-        val notification = NotificationCompat
-            .Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setTicker(resources.getString(R.string.new_pictures_title))
-            .setSmallIcon(android.R.drawable.ic_menu_report_image)
-            .setContentTitle(resources.getString(R.string.new_pictures_title))
-            .setContentText(resources.getString(R.string.new_pictures_text))
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
-
-        val notificationManager = NotificationManagerCompat.from(context)
-        notificationManager.notify(0, notification)
-
         return Result.success()
+    }
+
+    private fun showBackgroundNotification(requestCode: Int, notification: Notification) {
+        val intent = Intent(ACTION_SHOW_NOTIFICATION).apply {
+            putExtra(REQUEST_CODE, requestCode)
+            putExtra(NOTIFICATION,notification)
+        }
+        context.sendOrderedBroadcast(intent, PERM_PRIVATE)
+    }
+
+    companion object {
+        const val ACTION_SHOW_NOTIFICATION = "com.example.photogallery.SHOW_NOTIFICATION"
+        const val PERM_PRIVATE = "com.example.photogallery.PRIVATE"
+        const val REQUEST_CODE = "REQUEST_CODE"
+        const val NOTIFICATION = "NOTIFICATION"
     }
 }
