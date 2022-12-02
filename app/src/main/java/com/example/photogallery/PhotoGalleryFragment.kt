@@ -1,27 +1,24 @@
 package com.example.photogallery
 
-import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.example.photogallery.model.GalleryItem
 import com.example.photogallery.utils.FlickrCallback
 import com.example.photogallery.utils.PollWorker
-import com.example.photogallery.utils.ThumbnailDownloader
 import com.example.photogallery.utils.VisibleFragment
+import com.squareup.picasso.Picasso
 
 private const val TAG = "PhotoGalleryFragment"
 
@@ -30,20 +27,10 @@ class PhotoGalleryFragment : VisibleFragment() {
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
     private lateinit var photoRecyclerView: RecyclerView
     private var adapter = PhotoAdapter()
-    private lateinit var thumbnailDownloader: ThumbnailDownloader<PhotoHolder>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
-        val responseHandler = Handler()
-        thumbnailDownloader =
-            ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
-                val drawable = BitmapDrawable(resources, bitmap)
-                photoHolder.bindDrawable(drawable)
-            }
-        lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
         setHasOptionsMenu(true)
-
         createWorkRequest()
     }
 
@@ -99,9 +86,6 @@ class PhotoGalleryFragment : VisibleFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View     {
-        viewLifecycleOwner.lifecycle.addObserver(
-            thumbnailDownloader.viewLifecycleObserver
-        )
         val view = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
         createRecyclerView(view)
         return view
@@ -116,21 +100,6 @@ class PhotoGalleryFragment : VisibleFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         createObserver()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        thumbnailDownloader.clearQueue()
-        viewLifecycleOwner.lifecycle.removeObserver(
-            thumbnailDownloader.viewLifecycleObserver
-        )
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        lifecycle.removeObserver(
-            thumbnailDownloader.fragmentLifecycleObserver
-        )
     }
 
     private fun createObserver() {
@@ -153,6 +122,7 @@ class PhotoGalleryFragment : VisibleFragment() {
 
         fun bindGalleryItem(item: GalleryItem) {
             galleryItem = item
+            Picasso.get().load(item.url).into(itemImageView)
         }
 
         override fun onClick(view: View) {
@@ -176,7 +146,6 @@ class PhotoGalleryFragment : VisibleFragment() {
         override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
             val galleryItem = currentList[position]
             holder.bindGalleryItem(galleryItem)
-            thumbnailDownloader.queueThumbnail(holder,galleryItem.url)
         }
     }
 
